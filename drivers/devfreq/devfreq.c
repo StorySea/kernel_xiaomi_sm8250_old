@@ -538,31 +538,28 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
 				 void *devp)
 {
 	struct devfreq *devfreq = container_of(nb, struct devfreq, nb);
-	int ret;
-	long freq;
+	int err = -EINVAL;
 
 	mutex_lock(&devfreq->lock);
 
-	freq = find_available_min_freq(devfreq);
-	if (freq < 0) {
-		devfreq->scaling_min_freq = 0;
-		mutex_unlock(&devfreq->lock);
-		return -EINVAL;
-	}
-	devfreq->scaling_min_freq = freq;
+	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
+	if (!devfreq->scaling_min_freq)
+		goto out;
 
-	freq = find_available_max_freq(devfreq);
-	if (freq < 0) {
-		devfreq->scaling_max_freq = 0;
-		mutex_unlock(&devfreq->lock);
-		return -EINVAL;
-	}
-	devfreq->scaling_max_freq = freq;
+	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
+	if (!devfreq->scaling_max_freq)
+		goto out;
 
-	ret = update_devfreq(devfreq);
+	err = update_devfreq(devfreq);
+
+out:
 	mutex_unlock(&devfreq->lock);
+	if (err)
+		dev_err(devfreq->dev.parent,
+			"failed to update frequency from OPP notifier (%d)\n",
+			err);
 
-	return ret;
+	return NOTIFY_OK;
 }
 
 /**
