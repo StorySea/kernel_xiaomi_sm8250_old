@@ -702,7 +702,6 @@ static struct avc_node *avc_insert(struct selinux_avc *avc,
 	if (!node)
 		return NULL;
 	avc_node_populate(node, ssid, tsid, tclass, avd);
-
 	if (avc_xperms_populate(node, xp_node)) {
 		avc_node_kill(avc, node);
 		return NULL;
