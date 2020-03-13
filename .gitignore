@@ -100,7 +100,9 @@ patches-*
 # quilt's files
 patches
 series
-
+out
+mi10p.sh
+mi10.sh
 # cscope files
 cscope.*
 ncscope.*
